@@ -145,12 +145,14 @@ def main():
     # Train model
     model = train_model(X_train, y_train)
     
-    # Make predictions on test set
-    test_prob = model.predict_proba(X_test)[:, 1]
+    # Make binary predictions on test set (instead of probabilities)
+    test_pred = model.predict(X_test)  # This gives 0 or 1 predictions
+    test_prob = model.predict_proba(X_test)[:, 1]  # Keep probabilities for ROC curve
     
-    # Save predictions to CSV
+    # Save both binary predictions and probabilities to CSV
     predictions_df = pd.DataFrame({
-        'Predicted_Probability': test_prob
+        'Predicted_Exited': test_pred,
+        'Prediction_Probability': test_prob
     })
     predictions_df.to_csv('predictions.csv', index=False)
     
@@ -162,7 +164,7 @@ def main():
     print(f"Number of selected features: {len(selected_features)}")
     print(f"ROC AUC Score: {roc_auc:.4f}")
     print("\nFiles generated:")
-    print("- predictions.csv (Predicted probabilities)")
+    print("- predictions.csv (Binary predictions and probabilities)")
     print("- feature_importance_analysis.csv (Feature importance details)")
     print("- model_evaluation.txt (Performance metrics)")
     print("- confusion_matrix.png")
