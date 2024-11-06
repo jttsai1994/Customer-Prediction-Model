@@ -6,6 +6,13 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_curve, 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+RF_PARAMS = {
+    'n_estimators': 100,
+    'max_depth': 10, # Added to control model complexity
+    'min_samples_split':5,   # Added to prevent overfitting
+    'min_samples_leaf':2,    # Added to prevent overfitting
+    'random_state': 42
+}
 def load_and_preprocess_data(train_path, test_path):
     """
     Load and preprocess the training and test datasets using only RF feature importance
@@ -38,8 +45,8 @@ def load_and_preprocess_data(train_path, test_path):
     X_train = all_data[:len(train_df)].drop(id_columns + ['Exited'], axis=1)
     y_train = train_df['Exited']
     
-    # Feature selection using Random Forest importance only
-    rf_selector = RandomForestClassifier(n_estimators=100, random_state=42)
+    # Feature selection using Random Forest importance with same parameters
+    rf_selector = RandomForestClassifier(**RF_PARAMS)  # Using same parameters
     rf_selector.fit(X_train, y_train)
     
     # Calculate and save feature importance
@@ -64,15 +71,9 @@ def load_and_preprocess_data(train_path, test_path):
 
 def train_model(X_train, y_train):
     """
-    Train the Random Forest model
+    Train the Random Forest model with consistent parameters
     """
-    model = RandomForestClassifier(
-        n_estimators=100,
-        max_depth=10,          # Added to control model complexity
-        min_samples_split=5,   # Added to prevent overfitting
-        min_samples_leaf=2,    # Added to prevent overfitting
-        random_state=42
-    )
+    model = RandomForestClassifier(**RF_PARAMS)  # Using same parameters
     model.fit(X_train, y_train)
     return model
 
