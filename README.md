@@ -1,24 +1,26 @@
 # Customer Churn Prediction Model
 
-A machine learning pipeline for predicting customer churn using Random Forest with consistent parameter settings and robust feature selection.
+A machine learning pipeline for predicting customer churn using Random Forest classifier with consistent parameter settings throughout the feature selection and model training process.
 
 ## Project Structure
 
 ```
 .
-├── main.py                           # Main script with ML pipeline
-├── train_example.csv                 # Training dataset
+├── main.py                           # Main script containing the ML pipeline
+├── train.csv                         # Training dataset
 ├── test.csv                          # Test dataset
-├── predictions.csv                   # Model predictions
-├── initial_feature_importance.csv    # Initial feature importance analysis
-├── feature_importance_comparison.csv # Parameter impact comparison
-├── importance_comparison.png        # Visual comparison of importance scores
+├── predictions.csv                   # Binary predictions and probabilities
+├── feature_importance_analysis.csv   # Feature importance analysis
+├── model_evaluation.txt              # Classification report and metrics
+├── confusion_matrix.png             # Confusion matrix visualization
+├── roc_curve.png                    # ROC curve visualization
+├── feature_importance.png           # Feature importance plot
 └── README.md                        # This file
 ```
 
 ## Features
 
-### Consistent Model Parameters
+### Model Parameters
 The implementation uses consistent Random Forest parameters throughout the pipeline:
 ```python
 RF_PARAMS = {
@@ -30,16 +32,15 @@ RF_PARAMS = {
 }
 ```
 
-### Feature Selection Process
-- Uses Random Forest importance scores
-- Importance threshold: > 0.05 (5%)
-- Same parameters for both selection and final model
-- Comparison analysis of feature importance stability
-
 ### Data Preprocessing
 - Label encoding for categorical variables
 - Standard scaling for numerical features
-- Consistent preprocessing across train and test sets
+- Consistent preprocessing across training and test sets
+
+### Feature Selection
+- Uses Random Forest importance scores with consistent parameters
+- Importance threshold: > 0.05 (5%)
+- Features selected based on importance analysis
 
 ## Requirements
 
@@ -49,28 +50,34 @@ pip install pandas numpy scikit-learn matplotlib seaborn
 
 ## Input Data Format
 
-### Training Data Columns
-- ID Columns: 'id', 'CustomerId'
-- Categorical: 'Geography', 'Gender', 'Surname'
-- Numerical: 
-  - 'CreditScore'
-  - 'Age'
-  - 'Tenure'
-  - 'Balance'
-  - 'NumOfProducts'
-  - 'HasCrCard'
-  - 'IsActiveMember'
-  - 'EstimatedSalary'
-- Target: 'Exited'
+### Required Columns
+1. ID Columns:
+   - 'id'
+   - 'CustomerId'
 
-### Test Data
-Same format as training data without 'Exited' column
+2. Categorical Features:
+   - 'Geography'
+   - 'Gender'
+   - 'Surname'
+
+3. Numerical Features:
+   - 'CreditScore'
+   - 'Age'
+   - 'Tenure'
+   - 'Balance'
+   - 'NumOfProducts'
+   - 'HasCrCard'
+   - 'IsActiveMember'
+   - 'EstimatedSalary'
+
+4. Target Variable (training data only):
+   - 'Exited'
 
 ## Usage
 
 1. Prepare your data files:
-   - Ensure `train_example.csv` and `test.csv` are in the correct format
-   - Place them in the same directory as `main.py`
+   - Place `train.csv` and `test.csv` in the same directory as `main.py`
+   - Ensure all required columns are present
 
 2. Run the pipeline:
 ```bash
@@ -80,55 +87,53 @@ python main.py
 ## Output Files
 
 1. `predictions.csv`
-   - Contains predicted churn probabilities for test set
-   - Format: single column of probabilities
+   - Contains two columns:
+     - `Predicted_Exited`: Binary predictions (0 or 1)
+     - `Prediction_Probability`: Probability scores
 
-2. `initial_feature_importance.csv`
-   - Features and their importance scores
-   - Sorted by importance
+2. `feature_importance_analysis.csv`
+   - Complete feature importance scores
+   - Sorted by importance value
 
-3. `feature_importance_comparison.csv`
-   - Comparison of feature importance with different parameters
-   - Shows stability of feature selection
+3. `model_evaluation.txt`
+   - List of selected features
+   - Classification report
+   - ROC AUC score
 
-4. `importance_comparison.png`
-   - Visual representation of feature importance comparison
-   - Helps identify any parameter impact on feature selection
+4. Visualizations:
+   - `confusion_matrix.png`: Model prediction accuracy
+   - `roc_curve.png`: ROC curve with AUC score
+   - `feature_importance.png`: Importance of selected features
 
-## Model Details
+## Model Evaluation
 
-### Parameters Selection Rationale
-- `max_depth=10`: Prevents overfitting while maintaining predictive power
-- `min_samples_split=5`: Ensures robust node splitting
-- `min_samples_leaf=2`: Maintains prediction stability
-- These parameters are used consistently in both feature selection and final model
+The pipeline generates:
+1. Classification Metrics:
+   - Precision
+   - Recall
+   - F1-score
+   - Support
 
-### Feature Selection Threshold
-- 5% importance threshold
-- Features contributing less than 5% to decisions are excluded
-- Balances between model complexity and performance
+2. Visualizations:
+   - Confusion Matrix
+   - ROC Curve with AUC score
+   - Feature Importance Plot
 
-## Performance Metrics
-The pipeline generates several performance metrics:
-- ROC curve and AUC score
-- Confusion matrix
-- Classification report (precision, recall, F1-score)
-- Feature importance stability analysis
+## Error Handling
 
-## Error Handling and Validation
-- Consistent parameter usage throughout pipeline
-- Feature importance comparison for validation
-- Robust preprocessing steps
-- Parameter impact analysis
+The pipeline includes checks for:
+1. Data Loading:
+   - Presence of required columns
+   - Proper file formats
 
-## Notes
-- Feature selection process uses the same model parameters as the final model to ensure consistency
-- The 5% importance threshold can be adjusted based on specific needs
-- Cross-validation can be added for more robust evaluation
+2. Preprocessing:
+   - Categorical encoding
+   - Numerical scaling
+   - Feature selection validation
 
 ## Customization
 
-To modify model parameters, update `RF_PARAMS` in `main.py`:
+1. Modify model parameters in `main.py`:
 ```python
 RF_PARAMS = {
     'n_estimators': your_value,
@@ -139,7 +144,7 @@ RF_PARAMS = {
 }
 ```
 
-To adjust feature selection threshold, modify in `load_and_preprocess_data()`:
+2. Adjust feature selection threshold:
 ```python
 feature_importance['Importance'] > your_threshold  # Default is 0.05
 ```
@@ -147,30 +152,23 @@ feature_importance['Importance'] > your_threshold  # Default is 0.05
 ## Troubleshooting
 
 Common issues and solutions:
-1. Missing columns in input data
-   - Ensure all required columns are present
+
+1. Missing Columns:
+   - Verify all required columns exist in input files
    - Check column names match exactly
 
-2. Memory issues with large datasets
+2. Memory Issues:
    - Reduce n_estimators in RF_PARAMS
    - Increase min_samples_split threshold
 
-3. Feature selection too strict/loose
-   - Adjust importance threshold (default 0.05)
-   - Monitor number of selected features
+3. Performance Issues:
+   - Adjust feature importance threshold
+   - Modify model parameters
 
 ## Future Improvements
 
 Potential enhancements:
-1. Add cross-validation for parameter tuning
-2. Implement feature selection stability analysis
-3. Add support for different model types
-4. Include feature correlation analysis
-
-## Contributing
-
-To contribute:
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Submit a pull request
+1. Add cross-validation
+2. Implement grid search for parameter optimization
+3. Add feature correlation analysis
+4. Include more performance metrics
