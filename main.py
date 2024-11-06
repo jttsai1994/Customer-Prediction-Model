@@ -120,3 +120,25 @@ def evaluate_model(model, X_train, y_train):
         f.write(report)
     
     return report
+
+def main():
+    # Load and preprocess data
+    X_train, X_test, y_train = load_and_preprocess_data('train_example.csv', 'test.csv')
+    
+    # Train model
+    model = train_model(X_train, y_train)
+    
+    # Make predictions on test set
+    test_prob = model.predict_proba(X_test)[:, 1]
+    
+    # Save predictions to CSV
+    predictions_df = pd.DataFrame({
+        'Predicted_Probability': test_prob
+    })
+    predictions_df.to_csv('predictions.csv', index=False)
+    
+    # Evaluate model and save results
+    evaluate_model(model, X_train, y_train)
+    
+if __name__ == "__main__":
+    main()
