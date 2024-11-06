@@ -7,10 +7,9 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_curve, 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Load and preprocess the training and test datasets
 def load_and_preprocess_data(train_path, test_path):
-    """
-    Load and preprocess the training and test datasets
-    """
+
     # Load datasets
     train_df = pd.read_csv(train_path)
     test_df = pd.read_csv(test_path)
@@ -56,3 +55,68 @@ def load_and_preprocess_data(train_path, test_path):
     test_processed = all_data[len(train_df):][selected_features]
     
     return train_processed, test_processed, y_train
+
+# Train a Random Forest model
+def train_model(X_train, y_train):
+
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+
+    return model
+
+def evaluate_model(model, X_train, y_train):
+    """
+    Evaluate model performance and create visualization plots
+    """
+    # Get predictions and probabilities
+    y_pred = model.predict(X_train)
+    y_prob = model.predict_proba(X_train)[:, 1]
+    
+    # Calculate confusion matrix
+    cm = confusion_matrix(y_train, y_pred)
+    
+    # Plot confusion matrix
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.title('Confusion Matrix')
+    plt.ylabel('True Label')
+    plt.xlabel('Predicted Label')
+    plt.savefig('confusion_matrix.png')
+    plt.close()
+    
+    # Plot ROC curve
+    fpr, tpr, _ = roc_curve(y_train, y_prob)
+    roc_auc = auc(fpr, tpr)
+    
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.savefig('roc_curve.png')
+    plt.close()
+    
+    # Plot feature importance
+    feature_importance = pd.DataFrame({
+        'feature': X_train.columns,
+        'importance': model.feature_importances_
+    }).sort_values('importance', ascending=False)
+    
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='importance', y='feature', data=feature_importance)
+    plt.title('Feature Importance')
+    plt.xlabel('Importance')
+    plt.tight_layout()
+    plt.savefig('feature_importance.png')
+    plt.close()
+    
+    # Generate and save classification report
+    report = classification_report(y_train, y_pred)
+    with open('model_evaluation.txt', 'w') as f:
+        f.write(report)
+    
+    return report
